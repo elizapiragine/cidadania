@@ -4,6 +4,56 @@ Monitora se os formulários de Passaporto (4705) e CIE (5967) estão acessíveis
 **Formulário acessível não significa vaga disponível.** Não preenche dados,
 não anexa documentos e não confirma reservas.
 
+## Opção recomendada para testar no Mac: extensão do Chrome
+
+Usa a sessão do seu Chrome normal, sem exportar cookies ou abrir o navegador do
+Playwright. Não precisa de Python nem Telegram. A versão inicial envia avisos pelo
+Chrome/macOS. Não há garantia de que o site permitirá essas consultas; se houver
+restrição, a extensão pausa e pede intervenção, sem contornar a proteção.
+
+1. Baixe este repositório em **Code → Download ZIP** e descompacte.
+2. No Chrome em que você já está logada no Prenotami, abra `chrome://extensions`.
+3. Ative **Modo do desenvolvedor** no canto superior direito.
+4. Clique em **Carregar sem compactação** (ou **Load unpacked**).
+5. Selecione a pasta **extension**, dentro de `cidadania-main` (não o ZIP nem a pasta raiz).
+6. No ícone de quebra-cabeça do Chrome, fixe **Prenotami — alertas de formulário**.
+7. Abra a extensão e clique em **Testar aviso no Mac**. Se necessário, permita
+   notificações do Google Chrome nos Ajustes do Sistema → Notificações e confira
+   o modo Foco/Não Perturbe.
+8. Clique em **Iniciar / retomar**. Uma aba dedicada será criada; deixe-a aberta.
+
+A primeira consulta ocorre ao iniciar; as próximas, a cada 10 minutos, sequencialmente
+para os dois serviços. O Chrome precisa estar aberto e o Mac acordado/conectado.
+Fechar o popup não para o monitor. Para parar, use **Pausar**. Consultas que já estão
+carregando podem terminar, mas não geram novos avisos após a pausa.
+
+Ao detectar login, bloqueio, erro de leitura ou página desconhecida, pausa as próximas
+consultas e avisa. Resolva manualmente na aba dedicada e só então retome pela extensão.
+Não use essa aba para outras tarefas. Se você fechá-la com o monitor ativo, uma nova
+será criada na próxima consulta. Ao reiniciar o Chrome, um monitor anteriormente ativo
+volta a consultar após cerca de um minuto; pausas por bloqueio permanecem pausadas.
+
+Um aviso de formulário é enviado na primeira detecção e quando o estado muda para
+formulário acessível. Formulário continuamente acessível não dispara avisos repetidos.
+Os textos de indisponibilidade e seletores precisam de validação nas páginas reais.
+O painel mostra o resultado e o horário de cada serviço; um resultado antigo não é
+evidência de disponibilidade atual.
+
+Privacidade: sem senha, token, extração de cookies ou envio de dados a terceiros.
+A leitura acontece somente nos três domínios declarados no manifesto, na aba do
+monitor. O corpo da página é classificado em memória; apenas estado e horário são
+persistidos localmente. O acesso a IAM e à página de proteção permite identificar
+quando parar. A extensão não preenche nem envia formulários. Não promete detecção
+instantânea, execução 24h ou vagas no calendário. Permissões são limitadas ao fluxo.
+
+Testes da extensão (Node.js): `node --test tests/extension/*.test.mjs`.
+
+## Alternativa Python (login automatizado ainda bloqueado no teste real)
+
+O teste no Mac identificou uma página de proteção seguida de HTTP 404 no serviço
+de identidade. Os passos abaixo são para desenvolvimento/diagnóstico e não representam
+um fluxo autenticado confirmado. Prefira testar a extensão acima.
+
 ## Preparação e login
 
 Python 3.12+ em um computador com interface gráfica:

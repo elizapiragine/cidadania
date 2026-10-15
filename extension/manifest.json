@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "Prenotami — alertas de formulário",
+  "version": "0.1.0",
+  "description": "Verifica se os formulários de CIE e passaporte abrem na sua sessão atual. Não reserva horários.",
+  "permissions": ["alarms", "storage", "notifications", "scripting"],
+  "host_permissions": ["https://prenotami.esteri.it/*", "https://iam.esteri.it/*", "https://validate.perfdrive.com/*"],
+  "background": {"service_worker": "background.js", "type": "module"},
+  "action": {"default_popup": "popup.html"},
+  "icons": {"128": "icon.png"}
+}

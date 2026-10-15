@@ -1,0 +1,5 @@
+body { width: 320px; padding: 14px; font: 14px/1.5 system-ui; color: #183028; }
+h1 {font-size: 20px; margin-top: 0;}
+button {display:block; width:100%; margin:8px 0; padding:9px; cursor:pointer;}
+#start {background:#166534; color:white; border:0; border-radius:5px;}
+#reason, #error {color:#92400e;}
