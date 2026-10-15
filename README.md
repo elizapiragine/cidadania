@@ -21,6 +21,18 @@ não adicione ao Git e transfira ao servidor apenas por canal seguro (SSH/SCP).
 Se expirar, repita o login, substitua o arquivo no servidor e reinicie o monitor.
 Login automático fica para uma etapa futura; não há desvio de CAPTCHA/Cloudflare.
 
+Se o login funcionar no seu navegador habitual mas falhar no Chromium do monitor,
+experimente o Google Chrome instalado no computador:
+
+```sh
+.venv/bin/python monitor.py --login --chrome
+```
+
+Esse modo usa um perfil exclusivo em `data/login-profile`, sem acessar seu perfil
+pessoal. Aguarde sua conta abrir antes de pressionar Enter no terminal. Use também
+`--chrome` nas consultas locais se optar por esse navegador. É uma alternativa para
+diagnóstico; ainda precisa de validação no Mac e não contorna proteções do site.
+
 ## Telegram e teste real
 
 Crie um bot pelo BotFather no Telegram, abra o chat privado com ele e envie `/start`.

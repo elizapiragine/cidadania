@@ -79,16 +79,26 @@ async def main(args):
     session = DATA / 'session.json'
     if args.login:
         async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=False)
-            context = await browser.new_context()
-            page = await context.new_page()
-            await page.goto('https://prenotami.esteri.it/')
-            await asyncio.to_thread(input, 'Faça login no navegador e pressione Enter aqui: ')
-            # Confirm authentication using an account navigation element, not just absence of errors.
-            if not await page.get_by_text('Disconnetti', exact=False).count():
-                raise RuntimeError('Login não confirmado; sessão não foi salva.')
-            save_json(session, await context.storage_state())
-            await browser.close()
+            # Dedicated profile: never open or copy the user's personal browser profile.
+            context = await p.chromium.launch_persistent_context(
+                str(DATA / 'login-profile'), headless=False,
+                channel='chrome' if args.chrome else None)
+            try:
+                page = await context.new_page()
+                await page.goto('https://prenotami.esteri.it/')
+                await asyncio.to_thread(input, 'Faça login no navegador. Só depois de ver sua conta, volte aqui e pressione Enter: ')
+                await page.goto('https://prenotami.esteri.it/Services', wait_until='domcontentloaded')
+                await page.wait_for_timeout(2000)
+                authenticated = await page.locator(
+                    'a[href*="/Services/Booking/"], a[href*="Logout"], a[href*="LogOff"], a[href*="logout"]'
+                ).count()
+                if (urlparse(page.url).hostname != 'prenotami.esteri.it'
+                        or await page.locator('input[type=password]').count()
+                        or not authenticated):
+                    raise RuntimeError('Login não confirmado. A janela deve mostrar sua conta antes de pressionar Enter. Sessão não foi salva.')
+                save_json(session, await context.storage_state(indexed_db=True))
+            finally:
+                await context.close()
         print('Sessão salva. Trate data/session.json como uma senha.')
         return
     if not session.exists():
@@ -100,7 +110,7 @@ async def main(args):
     interval = max(300, int(os.environ.get('CHECK_INTERVAL_SECONDS', '600')))
     backoff = interval
     async with async_playwright() as p:
-        browser = await p.chromium.launch()
+        browser = await p.chromium.launch(channel='chrome' if args.chrome else None)
         context = await browser.new_context(storage_state=str(session))
         page = await context.new_page()
         try:
@@ -146,6 +156,7 @@ async def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--login', action='store_true')
+    parser.add_argument('--chrome', action='store_true', help='Usa o Google Chrome instalado no computador')
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--dry-run', action='store_true', help='Sem avisos nem alterações no estado de notificações')
     args = parser.parse_args()
