@@ -33,6 +33,22 @@ pessoal. Aguarde sua conta abrir antes de pressionar Enter no terminal. Use tamb
 `--chrome` nas consultas locais se optar por esse navegador. É uma alternativa para
 diagnóstico; ainda precisa de validação no Mac e não contorna proteções do site.
 
+Se o login normal funcionar, mas o monitor terminar em “Not Found”, execute uma
+única tentativa de diagnóstico:
+
+```sh
+.venv/bin/python monitor.py --diagnose-login --chrome
+```
+
+Complete o CAPTCHA manualmente se solicitado. Ao ver o resultado (conta ou erro),
+volte ao terminal e pressione Enter, mantendo a janela aberta até esse momento.
+Compartilhe somente as linhas `[diagnostico]`. Esse modo registra apenas códigos
+HTTP de navegações da janela e rótulos de domínio/caminho permitidos; omite parâmetros,
+fragmentos, caminhos desconhecidos e URLs embutidas. Não registra formulários,
+senhas, cookies, corpos de resposta ou screenshots, nem exporta a sessão. O perfil
+local `data/login-profile` ainda pode armazenar cookies: mantenha-o privado.
+Não repita tentativas quando o serviço continuar bloqueando o acesso.
+
 ## Telegram e teste real
 
 Crie um bot pelo BotFather no Telegram, abra o chat privado com ele e envie `/start`.

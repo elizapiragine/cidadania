@@ -13,6 +13,19 @@ DATA = Path(os.environ.get('MONITOR_DATA_DIR', Path(__file__).resolve().parent /
 SERVICES = {'4705': 'Passaporto', '5967': 'CIE'}
 
 
+def diagnostic_location(url):
+    """Allowlisted labels only: even URL paths can embed OAuth URLs/tokens."""
+    parsed = urlparse(url)
+    host = parsed.hostname
+    if host not in {'prenotami.esteri.it', 'iam.esteri.it', 'validate.perfdrive.com'}:
+        return '[outro domínio; endereço omitido]'
+    known = {'/', '/Services', '/pingid', '/signin', '/login/oauth2/authorize'}
+    path = parsed.path.rstrip('/') or '/'
+    if path not in known:
+        path = '/signin/[caminho omitido]' if path.startswith('/signin/') else '/[caminho omitido]'
+    return host + path
+
+
 def classify(url, status, text, fields):
     text = ' '.join(text.lower().split())
     if status in (403, 429) or any(s in text for s in (
@@ -77,7 +90,7 @@ async def main(args):
     os.umask(0o077)
     DATA.mkdir(parents=True, exist_ok=True, mode=0o700)
     session = DATA / 'session.json'
-    if args.login:
+    if args.login or args.diagnose_login:
         async with async_playwright() as p:
             # Dedicated profile: never open or copy the user's personal browser profile.
             context = await p.chromium.launch_persistent_context(
@@ -85,6 +98,20 @@ async def main(args):
                 channel='chrome' if args.chrome else None)
             try:
                 page = await context.new_page()
+                if args.diagnose_login:
+                    def on_response(response):
+                        if response.request.is_navigation_request() and response.frame == page.main_frame:
+                            print(f'[diagnostico] HTTP {response.status} {diagnostic_location(response.url)}', flush=True)
+                    page.on('response', on_response)
+                    try:
+                        await page.goto('https://prenotami.esteri.it/')
+                        await asyncio.to_thread(input, 'DIAGNÓSTICO: faça UMA tentativa de login. Ao ver sua conta ou o erro, volte aqui e pressione Enter sem fechar o navegador: ')
+                        print(f'[diagnostico] Página final: {diagnostic_location(page.url)}', flush=True)
+                        print('[diagnostico] Fim. Nenhuma sessão foi exportada neste teste.', flush=True)
+                    except Exception as error:
+                        # Playwright exception messages can include complete authentication URLs.
+                        print(f'[diagnostico] Teste interrompido: {type(error).__name__}. Detalhes privados omitidos.', flush=True)
+                    return
                 await page.goto('https://prenotami.esteri.it/')
                 await asyncio.to_thread(input, 'Faça login no navegador. Só depois de ver sua conta, volte aqui e pressione Enter: ')
                 await page.goto('https://prenotami.esteri.it/Services', wait_until='domcontentloaded')
@@ -156,6 +183,7 @@ async def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--login', action='store_true')
+    parser.add_argument('--diagnose-login', action='store_true', help='Registra apenas status e etapas sanitizadas de uma tentativa manual de login')
     parser.add_argument('--chrome', action='store_true', help='Usa o Google Chrome instalado no computador')
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--dry-run', action='store_true', help='Sem avisos nem alterações no estado de notificações')

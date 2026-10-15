@@ -1,11 +1,20 @@
 import unittest
 from unittest.mock import patch
-from monitor import classify, notify
+from monitor import classify, notify, diagnostic_location
 
 URL = 'https://prenotami.esteri.it/Services/Booking/5967'
 
 
 class ClassificationTests(unittest.TestCase):
+    def test_diagnostics_drop_query_fragment_and_userinfo(self):
+        self.assertEqual(diagnostic_location('https://user:secret@iam.esteri.it/signin/?code=private#token'), 'iam.esteri.it/signin')
+
+    def test_diagnostics_drop_embedded_auth_url(self):
+        self.assertEqual(diagnostic_location('https://iam.esteri.it/signin/https%3A%2F%2Fprivate-token'), 'iam.esteri.it/signin/[caminho omitido]')
+
+    def test_diagnostics_drop_unknown_host(self):
+        self.assertEqual(diagnostic_location('https://private-value.example/account'), '[outro domínio; endereço omitido]')
+
     def test_form(self):
         self.assertEqual(classify(URL, 200, 'Prenotazione Singola AVANTI', {'select', 'file'}), 'form_available')
 
