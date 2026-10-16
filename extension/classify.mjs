@@ -10,7 +10,8 @@ export function classify({url, text, fields}, service) {
       /\/login\/?$/i.test(parsed.pathname)) return 'login_required';
   if (['al momento non ci sono date', 'nessuna disponibilità',
     'non ci sono appuntamenti', 'non sono disponibili',
-    'non ci sono disponibilità', 'no appointments available'
+    'non ci sono disponibilità', 'no appointments available',
+    'all appointments for this service are currently booked'
   ].some(s => body.includes(s))) return 'unavailable';
   if (parsed.hostname === 'prenotami.esteri.it' &&
       parsed.pathname.replace(/\/$/, '') === `/Services/Booking/${service}` &&

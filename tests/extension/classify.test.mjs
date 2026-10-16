@@ -18,6 +18,12 @@ test('login field never means available', () => {
 test('unavailability modal overrides underlying form', () => {
   assert.equal(classify({...page, text:page.text + ' Al momento non ci sono date disponibili'}, '5967'), 'unavailable');
 });
+test('observed English popup on services list means unavailable', () => {
+  const modal = {url:'https://prenotami.esteri.it/Services',
+    text:'Reservar All appointments for this service are currently booked. OK', fields:[]};
+  assert.equal(classify(modal, '4705'), 'unavailable');
+  assert.equal(classify({...modal, text:'ALL APPOINTMENTS FOR THIS SERVICE\n ARE CURRENTLY BOOKED.'}, '5967'), 'unavailable');
+});
 test('unknown is not silently unavailable', () => {
   assert.equal(classify({...page, text:'Not Found'}, '5967'), 'unknown');
 });

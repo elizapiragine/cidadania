@@ -36,6 +36,9 @@ volta a consultar após cerca de um minuto; pausas por bloqueio permanecem pausa
 Um aviso de formulário é enviado na primeira detecção e quando o estado muda para
 formulário acessível. Formulário continuamente acessível não dispara avisos repetidos.
 Os textos de indisponibilidade e seletores precisam de validação nas páginas reais.
+Na versão 0.1.1, o popup observado “All appointments for this service are currently
+booked.” é reconhecido como indisponibilidade, inclusive após retorno à lista de
+serviços. Nesse caso o monitor continua para o segundo serviço, sem pausar.
 O painel mostra o resultado e o horário de cada serviço; um resultado antigo não é
 evidência de disponibilidade atual.
 

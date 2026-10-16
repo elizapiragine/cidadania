@@ -37,9 +37,9 @@ test('start, notifications, deduplication, login pause and manual resume', async
       return tab;
     }},
     scripting: {executeScript: async ({target}) => [{result: {
-      url: snapshot === 'login' ? 'https://iam.esteri.it/signin/' : tabs.get(target.tabId).url,
-      text: snapshot === 'form' ? 'Prenotazione Singola AVANTI' : 'Login',
-      fields: snapshot === 'form' ? ['select', 'text'] : ['password']
+      url: snapshot === 'login' ? 'https://iam.esteri.it/signin/' : snapshot === 'unavailable' ? 'https://prenotami.esteri.it/Services' : tabs.get(target.tabId).url,
+      text: snapshot === 'form' ? 'Prenotazione Singola AVANTI' : snapshot === 'unavailable' ? 'All appointments for this service are currently booked.' : 'Login',
+      fields: snapshot === 'form' ? ['select', 'text'] : snapshot === 'unavailable' ? [] : ['password']
     }}]},
     runtime: {id: 'test-extension', onStartup: event(), onMessage: event()}
   };
@@ -79,6 +79,14 @@ test('start, notifications, deduplication, login pause and manual resume', async
     await done();
     assert.equal(state.enabled, true);
     assert.equal(notifications.length, 4, 'only changed service alerts on resume');
+    snapshot = 'unavailable';
+    chrome.alarms.onAlarm.emit({name: 'check'});
+    await done();
+    assert.equal(state.results['4705'].status, 'unavailable');
+    assert.equal(state.results['5967'].status, 'unavailable', 'unavailable passport must not stop CIE check');
+    assert.equal(state.enabled, true, 'unavailability must not pause monitoring');
+    assert.equal(alarms.has('check'), true);
+    assert.equal(notifications.length, 4, 'unavailability must not produce an availability alert');
     await message('test');
     assert.equal(notifications.at(-1).id, 'test');
     await message('pause');
